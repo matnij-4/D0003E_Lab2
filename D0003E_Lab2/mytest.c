@@ -4,6 +4,12 @@
 #include <avr/io.h>
 
 
+//Global PP
+int pp;
+
+//Create mutex
+mutex mutexPrime = MUTEX_INIT;
+
 void LCDInit(void) {
 	
 	//Set Lowpower Waveform, no frame interrupt, no blanking. LCD Enable
@@ -71,6 +77,7 @@ void writeChar(char ch, int pos)
 	}
 }
 
+//Calculates the prime.
 bool is_prime(long i)
 {
 	//Loop all the numbers under i and try to divide it with them.
@@ -87,12 +94,17 @@ bool is_prime(long i)
 }
 
 void printAt(long num, int pos) {
-	int pp = pos;
+	//lock the mutex
+	lock(&mutexPrime);
+	pp = pos;
 	writeChar( (num % 100) / 10 + '0', pp);
 	pp++;
 	writeChar( num % 10 + '0', pp);
+	//Unlock the mutex
+	unlock(&mutexPrime);
 }
 
+//Counts the primes.
 void computePrimes(int pos) {
 	long n;
 
@@ -105,6 +117,10 @@ void computePrimes(int pos) {
 }
 
 int main() {
+	
+	CLKPR = 0x80;
+	CLKPR = 0x00;
+	
 	LCDInit();
 	spawn(computePrimes, 0);
 	computePrimes(3);

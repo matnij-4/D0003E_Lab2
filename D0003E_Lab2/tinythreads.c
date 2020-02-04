@@ -122,19 +122,52 @@ void spawn(void (* function)(int), int arg) {
 }
 
 void yield(void) {
+	ENABLE();
 	enqueue(current, &readyQ);
 	dispatch(dequeue(&readyQ));
+	DISABLE();
 }
 
-void lock(mutex *m) {
+void lock(mutex *m) 
+{
+	DISABLE();
+	
+	//Take the mutex
+	if (m->locked == 0)
+	{
+		m->locked = 1;
+	}
+	//Wait if it is already locked.
+	else
+	{
+		enqueue(current, &(m->waitQ));
+		dispatch(dequeue(&readyQ));
+	}
+	ENABLE();
 
 }
 
-void unlock(mutex *m) {
-
+void unlock(mutex *m) 
+{
+	DISABLE();
+	
+	
+	//Check it it is non empty.
+	if (m->waitQ != NULL) 
+	{
+		enqueue(current, &readyQ);
+		dispatch(dequeue(&(m->waitQ)));
+	} 
+	//Realese the mutex.
+	else
+	{
+		m->locked = 0;
+	}
+	
+	ENABLE();
 }
 
-
+//Macro for listening for the button.
 ISR(PCINT1_vect) 
 {
 	if (PINB >> 7 == 0) 
@@ -143,7 +176,8 @@ ISR(PCINT1_vect)
 	}
 }
 
-
-ISR(TIMER1_COMPA_vect) {
+//Macro for listening for the clock.
+ISR(TIMER1_COMPA_vect) 
+{
 	yield();
 }
