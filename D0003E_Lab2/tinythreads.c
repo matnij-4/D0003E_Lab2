@@ -45,7 +45,7 @@ static void initialize(void) {
 	PCMSK1 = (1 << PCINT15);
 	
 	
-	// The clock settings.
+	// The clock settings. 
 	
 	//OC1A is set high on compare match.
 	TCCR1A = (1 << COM1A0) | (1 << COM1A1);
