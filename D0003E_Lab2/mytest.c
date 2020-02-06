@@ -118,6 +118,7 @@ void computePrimes(int pos) {
 
 int main() {
 	
+	//Set clock time.
 	CLKPR = 0x80;
 	CLKPR = 0x00;
 	
